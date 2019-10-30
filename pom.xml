@@ -4,11 +4,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.newlife</groupId>
-    <artifactId>newlife_charging_api</artifactId>
+    <artifactId>newlife_base_api</artifactId>
     <version>1.0.0-snapshot</version>
     <packaging>jar</packaging>
-    <name>newlife_charging_api</name>
-    <description>坚信新生活.汽车平台后端</description>
+    <name>newlife_base_api</name>
+    <description>坚信新生活.基础后端API</description>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
