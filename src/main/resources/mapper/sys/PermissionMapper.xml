@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.newlife.s4.sys.dao.PermissionDao">
+
+	<resultMap id="permissionMap" type="com.newlife.s4.common.model.One2Many">
+		<id column="userId" property="userId" />
+		<result column="nickname" property="nickname" />
+		<result column="realName" property="realName" />
+		<!-- <result column="roleId" property="roleId"/> <result column="roleName" 
+			property="roleName"/> -->
+		<collection property="roleIdList" ofType="String">
+			<id column="roleId" property="roleId" />
+		</collection>
+		<collection property="roleCodeList" ofType="String">
+			<id column="roleCode" property="roleCode" />
+		</collection>
+		<!--
+		<collection property="roleNameList" ofType="String">
+			<id column="roleName" property="roleName" />
+		</collection>
+		-->
+
+		<collection property="menuList" ofType="String">
+			<id column="menuCode" property="menuCode" />
+		</collection>
+		<collection property="permissionList" ofType="String">
+			<id column="permissionCode" property="permissionCode" />
+		</collection>
+	</resultMap>
+	<!-- <select id="getUserPermission" resultMap="permissionMap"> SELECT u.id 
+		userId, u.nickname nickname, u.role_id roleId, r.role_name roleName, p.menu_code 
+		menuCode, p.permission_code permissionCode FROM sys_user u LEFT JOIN sys_role 
+		r ON r.id = u.role_id LEFT JOIN sys_role_permission rp ON u.role_id = rp.role_id 
+		LEFT JOIN sys_permission p ON rp.permission_id = p.id WHERE u.username = 
+		#{username} AND u.delete_status='1' </select> -->
+	<select id="getUserPermission" resultMap="permissionMap">
+		SELECT
+		u.realName realName,
+		u.user_id userId,
+		u.nickname nickname,
+		ur.role_id roleId,
+		r.role_name roleName,
+		r.role_code roleCode,
+		m.menu_code menuCode,
+		CONCAT(m.menu_Code,':',o.Operation_Code) permissionCode
+		FROM sys_user u
+		LEFT JOIN sys_user_role ur ON u.user_id=ur.user_id
+		LEFT JOIN sys_role r ON r.role_id = ur.role_id
+		LEFT JOIN sys_role_permission rp ON r.role_id = rp.role_id
+		LEFT JOIN sys_menu m ON m.menu_id = rp.menu_id
+		LEFT JOIN sys_operation o ON o.operation_id = rp.operation_id
+
+
+		WHERE u.user_name = #{username}
+		AND u.status='0'
+	</select>
+
+	<select id="getAllPermission" resultType="String">
+		SELECT 
+		CONCAT(m.menu_Code,':',o.Operation_Code) permissionCode 
+		FROM sys_menu_operation mo
+		LEFT JOIN sys_menu m ON mo.menu_id = m.menu_id 
+		LEFT JOIN sys_operation o ON o.Operation_ID = mo.Operation_ID 
+		ORDER BY o.operation_id 
+	</select>
+	<select id="getAllMenu" resultType="String">
+		SELECT m.menu_code menuCode
+		FROM sys_menu m
+		ORDER BY m.menu_id
+	</select>
+
+	<resultMap type="com.newlife.s4.common.model.One2Many" id="listMenusMap">
+		<id column="id" property="id" />
+		<result column="label" property="label" />
+		<result column="pid" property="pid" />
+		<result column="menuCode" property="menuCode" />
+		<result column="menuFullName" property="menuFullName" />
+		<result column="menuIdTreePath" property="menuIdTreePath" />
+		<!--<collection property="menuOperationId" ofType="com.alibaba.fastjson.JSONObject">-->
+			<collection property="operations" ofType="com.alibaba.fastjson.JSONObject">
+				<id column="operationId" property="operationId" />
+				<result column="operationName" property="operationName" />
+				<result column="operationCode" property="operationCode" />
+				<result column="requiredPermission" property="requiredPermission" />
+			</collection>
+		<!--</collection>-->
+
+
+	</resultMap>
+
+	<select id="listMenus" resultMap="listMenusMap">
+		SELECT
+		m.menu_id id,
+		m.menu_name label,
+		m.parent_menu_id pid,
+		m.menu_Code
+		menuCode,
+		m.menu_FullName menuFullName,
+		m.menu_ID_Tree_Path
+		menuIdTreePath,
+		<!--mo.menuOperation_id menuOperationId,-->
+		o.operation_id
+		operationId,
+		o.operation_name operationName,
+		o.operation_code
+		operationCode,
+		o.Required_Permission requiredPermission
+		
+		FROM sys_menu m
+		LEFT JOIN sys_menu_operation mo ON mo.menu_id = m.menu_id
+		LEFT JOIN sys_operation o ON o.operation_id = mo.operation_id 
+		
+		<where>
+			m.status = '0'
+	      <if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(orgID)">
+	        AND EXISTS(SELECT * FROM sys_org_module om WHERE om.menu_id = m.menu_id and om.org_id = #{orgID})
+	      </if>
+		</where>
+
+		ORDER BY m.menu_id DESC
+
+	</select>
+
+	<insert id="addMenu" parameterType="com.alibaba.fastjson.JSONObject">
+		<selectKey resultType="java.lang.Long" order="AFTER"
+			keyProperty="Menu_Id">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		INSERT INTO sys_menu
+		(Menu_Name,Menu_Code,Menu_FullName,Parent_Menu_Id,Menu_Id_Tree_Path,Menu_Level,Create_Time)
+		VALUES
+		(
+		#{Menu_Name},#{Menu_Code},#{Menu_FullName},#{Parent_Menu_ID},#{Menu_Id_Tree_Path},#{Menu_Level},now())
+	</insert>
+
+	<select id="getMenuIdTreePath" resultType="String">
+		SELECT
+		Menu_ID_Tree_Path FROM sys_Menu WHERE Menu_id = #{Parent_Menu_ID}
+	</select>
+
+	<update id="updateMenuIdTreePath" parameterType="com.alibaba.fastjson.JSONObject">
+		UPDATE sys_Menu
+		SET
+		Menu_ID_Tree_Path = #{Menu_ID_Tree_Path}
+		WHERE Menu_id = #{Menu_Id}
+	</update>
+
+	<select id="getMenuLevel" resultType="Integer">
+		SELECT Menu_Level FROM
+		sys_Menu WHERE Menu_id = #{Menu_Id}
+	</select>
+
+	<update id="updateMenuLevel" parameterType="com.alibaba.fastjson.JSONObject">
+		UPDATE sys_Menu
+		SET
+		Menu_level = #{Menu_Level}
+		WHERE Menu_id= #{Menu_Id}
+
+	</update>
+
+	<update id="updateMenu" parameterType="com.alibaba.fastjson.JSONObject">
+		UPDATE sys_Menu
+		SET
+		Menu_Name = #{Menu_Name},
+		Menu_Code = #{Menu_Code},
+		Menu_FullName =
+		#{Menu_FullName}
+		WHERE Menu_id = #{Menu_Id}
+	</update>
+
+	<update id="deleteMenu" parameterType="com.alibaba.fastjson.JSONObject">
+		UPDATE sys_Menu
+		SET
+		status =
+		#{Status}
+		WHERE menu_id_tree_path like #{Menu_ID_Tree_Path}
+	</update>
+
+	<insert id="addMenuOperations" parameterType="com.alibaba.fastjson.JSONObject">
+		insert into sys_menu_operation(Operation_ID,Menu_ID) values
+			<foreach collection="menuOpList" item="item" separator="," >
+				(#{item},#{Menu_Id})
+			</foreach>
+	</insert>
+
+	<select id="listMenuOperations" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT
+			Operation_ID operationID,
+			Operation_Code operationCode,
+			Operation_Name  operationName
+		FROM  sys_operation
+		WHERE
+			length(Operation_Code) > 0;
+	</select>
+
+	<delete id="delMenuOperations" parameterType="com.alibaba.fastjson.JSONObject">
+		delete from sys_menu_operation where Menu_ID=#{Menu_Id}
+	</delete>
+</mapper>

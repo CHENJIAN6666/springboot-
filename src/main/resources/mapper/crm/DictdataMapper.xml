@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.newlife.s4.crm.dao.DictdataDao">
+  <insert id="addDictdata" parameterType="com.alibaba.fastjson.JSONObject">
+  <selectKey resultType="java.lang.Long" order="AFTER"
+			keyProperty="dictDataID">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+    INSERT INTO sys_dictdata
+    (
+	<trim suffixOverrides=",">
+		<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(dictDataID)">
+		DictDataID,
+		</if>
+		<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(dictTypeCode)">
+		DictTypeCode,
+		</if>
+		<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(dictDataCode)">
+		DictDataCode,
+		</if>
+		<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(dictDataText)">
+		DictDataText,
+		</if>
+		<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(status)">
+		Status,
+		</if>
+		Create_Time,
+		<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(createUser)">
+		Create_User,
+		</if>
+		<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(modifyTime)">
+		Modify_Time,
+		</if>
+		<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(modifyUser)">
+		Modify_User,
+		</if>
+		<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(orderNumber)">
+		Order_Number,
+		</if>
+		<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(orgID)">
+		Org_ID
+		</if>
+	</trim>
+  
+    )
+    VALUES
+    (
+	<trim suffixOverrides=",">
+		<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(dictDataID)">
+		#{dictDataID},
+		</if>
+		<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(dictTypeCode)">
+		#{dictTypeCode},
+		</if>
+		<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(dictDataCode)">
+		#{dictDataCode},
+		</if>
+		<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(dictDataText)">
+		#{dictDataText},
+		</if>
+		<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(status)">
+		#{status},
+		</if>
+		now(),
+		
+		<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(createUser)">
+		#{createUser},
+		</if>
+		<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(modifyTime)">
+		#{modifyTime},
+		</if>
+		<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(modifyUser)">
+		#{modifyUser},
+		</if>
+		<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(orderNumber)">
+		#{orderNumber},
+		</if>
+		<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(orgID)">
+		#{orgID}
+		</if>
+	</trim>
+    )
+  </insert>
+
+  <sql id="SqlWhere_Dictdata">
+    <trim prefix="WHERE" prefixOverrides="AND | OR ">
+      w.Status = '0'
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(dictDataID)">
+				AND w.DictDataID = #{ dictDataID}
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(dictTypeCode)">
+				AND w.DictTypeCode like  '%${dictTypeCode}%'
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(dictDataCode)">
+				AND w.DictDataCode like  '%${dictDataCode}%'
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(dictDataText)">
+				AND w.DictDataText like  '%${dictDataText}%'
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(status)">
+				AND w.Status = #{ status}
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(createTime)">
+				AND w.Create_Time = #{ createTime}
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(createUser)">
+				AND w.Create_User = #{ createUser}
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(modifyTime)">
+				AND w.Modify_Time = #{ modifyTime}
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(modifyUser)">
+				AND w.Modify_User = #{ modifyUser}
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(orderNumber)">
+				AND w.Order_Number = #{ orderNumber}
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(orgID)">
+				AND w.Org_ID = #{ orgID}
+			</if>
+     
+    <!--扩展查询条件-->
+
+
+    </trim>
+  </sql>
+  
+   <select id="listCountDictdata" resultType="long">
+    SELECT count(1)
+    FROM sys_dictdata w
+    <include refid="SqlWhere_Dictdata"/>
+  </select>
+  
+  <select id="listDictdata" resultType="com.alibaba.fastjson.JSONObject">
+    SELECT
+		
+		w.DictDataID dictDataID,
+		
+		w.DictTypeCode dictTypeCode,
+		
+		w.DictDataCode dictDataCode,
+		
+		w.DictDataText dictDataText,
+		
+		w.Status status,
+		DATE_FORMAT(w.Create_Time, '%Y-%m-%d %T') createTime ,
+		
+		w.Create_User createUser,
+		DATE_FORMAT(w.Modify_Time, '%Y-%m-%d %T') modifyTime ,
+		
+		w.Modify_User modifyUser,
+		
+		w.Order_Number orderNumber,
+		
+		w.Org_ID orgID
+   
+    FROM sys_dictdata w
+    <include refid="SqlWhere_Dictdata"/>
+    ORDER BY 
+    w.DictDataID
+    DESC
+    LIMIT #{offSet}, #{pageRow}
+   
+  </select>
+    
+	<update id="updateDictdata" parameterType="com.alibaba.fastjson.JSONObject">
+    UPDATE sys_dictdata
+    <trim prefix="SET" suffixOverrides=",">
+			 <if test="_parameter.containsKey('dictDataID')">
+        DictDataID = #{dictDataID},
+		
+      </if>
+			 <if test="_parameter.containsKey('dictTypeCode')">
+        DictTypeCode = #{dictTypeCode},
+		
+      </if>
+			 <if test="_parameter.containsKey('dictDataCode')">
+        DictDataCode = #{dictDataCode},
+		
+      </if>
+			 <if test="_parameter.containsKey('dictDataText')">
+        DictDataText = #{dictDataText},
+		
+      </if>
+			 <if test="_parameter.containsKey('status')">
+        Status = #{status},
+		
+      </if>
+        
+		
+			 <if test="_parameter.containsKey('createUser')">
+        Create_User = #{createUser},
+		
+      </if>
+        Modify_Time =now(),
+		
+			 <if test="_parameter.containsKey('modifyUser')">
+        Modify_User = #{modifyUser},
+		
+      </if>
+			 <if test="_parameter.containsKey('orderNumber')">
+        Order_Number = #{orderNumber},
+		
+      </if>
+			 <if test="_parameter.containsKey('orgID')">
+        Org_ID = #{orgID},
+		
+      </if>
+     
+    </trim>
+    WHERE 
+    DictDataID=#{dictDataID}
+  </update>
+  
+  <delete id="deleteDictdata" parameterType="com.alibaba.fastjson.JSONObject">
+    DELETE FROM sys_dictdata WHERE
+    <trim prefixOverrides="AND | OR ">
+      <if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(dictDataID)">
+        AND DictDataID = #{dictDataID}
+      </if>
+      
+    </trim>
+  </delete>
+    
+<select id="getDictdata" resultType="com.alibaba.fastjson.JSONObject">
+    SELECT
+		w.DictDataID dictDataID
+		,
+		w.DictTypeCode dictTypeCode
+		,
+		w.DictDataCode dictDataCode
+		,
+		w.DictDataText dictDataText
+		,
+		w.Status status
+		,
+		DATE_FORMAT(w.Create_Time, '%Y-%m-%d %T') createTime 
+		,
+		w.Create_User createUser
+		,
+		DATE_FORMAT(w.Modify_Time, '%Y-%m-%d %T') modifyTime 
+		,
+		w.Modify_User modifyUser
+		,
+		w.Order_Number orderNumber
+		,
+		w.Org_ID orgID
+		
+    
+    FROM sys_dictdata w WHERE
+    <trim prefixOverrides="AND | OR ">
+      <if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(dictDataID)">
+        AND DictDataID = #{dictDataID}
+      </if>
+    </trim>
+  </select>
+  
+   <select id="listDictdataByDictTypeCode" resultType="com.alibaba.fastjson.JSONObject">
+    SELECT
+		
+		w.DictDataID dictDataID,
+		
+		w.DictTypeCode dictTypeCode,
+		
+		w.DictDataCode dictDataCode,
+		
+		w.DictDataText dictDataText,
+		
+		w.Modify_User modifyUser
+		
+    FROM sys_dictdata w
+	where w.DictTypeCode= #{dictTypeCode} and status=0  and org_ID=#{orgID} 
+	 <if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(dictDataCode)">
+			and  w.dictDataCode=#{dictDataCode}
+      </if>
+    ORDER BY 
+    w.DictDataID
+    DESC
+   
+  </select>
+</mapper>
+
+

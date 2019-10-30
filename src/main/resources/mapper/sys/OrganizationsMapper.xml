@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.newlife.s4.sys.dao.OrganizationsDao">
+
+	<insert id="addOrganizations" parameterType="com.alibaba.fastjson.JSONObject">
+		<selectKey resultType="java.lang.Long" order="AFTER"
+			keyProperty="Org_Id">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		INSERT INTO sys_organization
+		(Org_Name,Org_Code,Org_FullName,Parent_Org_Id,Org_Id_Tree_Path,Org_Level,Create_Time,Org_Logo,Longitude,Latitude,Address,Telephone,Org_QRCode
+
+		<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(telephoneAfterSale)">
+			,Telephone_AfterSale
+		</if>
+
+<!--InsertSQLEnd-->
+		)
+		VALUES
+		(
+		#{Org_Name},#{Org_Code},#{Org_FullName},#{Parent_Org_ID},#{Org_Id_Tree_Path},#{Org_Level},now(),#{Org_Logo},#{Longitude},#{Latitude},#{Address},#{telephone},#{Org_QRCode}
+
+		<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(telephoneAfterSale)">
+			,#{telephoneAfterSale}
+		</if>
+
+<!--InsertSQL2End-->
+		)
+	</insert>
+
+	<select id="countOrganizations" resultType="Integer">
+		SELECT count(0)
+		FROM sys_organization w
+		WHERE w.status = '0'
+	</select>
+
+	<select id="listOrganizations" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT
+		w.org_id id,
+		w.Org_Name label,
+		w.parent_org_id pid,
+		date_format(w.create_time, '%Y.%m.%d %T') createTime,
+		w.Org_Code orgCode,
+		w.Org_FullName orgFullName,
+		w.Org_ID_Tree_Path orgIdTreePath,
+		w.Org_Logo orgLogo,
+		w.Longitude longitude,
+		w.Latitude latitude,
+		w.Address address,
+		w.Telephone telephone,
+		w.Org_QRCode orgQRCode
+
+			,w.Telephone_AfterSale telephoneAfterSale
+
+<!--listSQLEnd-->
+		FROM sys_organization w
+		<where>
+			w.status = '0'
+			<if test="Org_Name != null">
+				AND w.Org_Name like '%${Org_Name}%'
+			</if>
+			AND w.org_id_tree_path like '${orgIdTreePath}%'
+		</where>
+		ORDER BY w.org_id DESC
+
+	</select>
+
+	<update id="updateOrgIdTreePath" parameterType="com.alibaba.fastjson.JSONObject">
+		UPDATE sys_organization
+		SET
+		Org_ID_Tree_Path = #{Org_ID_Tree_Path}
+		WHERE org_id = #{Org_Id}
+	</update>
+
+	<update id="updateOrgNameTreePath" parameterType="com.alibaba.fastjson.JSONObject">
+		UPDATE sys_organization
+		SET
+		Org_NAME_Tree_Path = #{Org_Name_Tree_Path}
+		WHERE org_id = #{Org_Id}
+	</update>
+
+	<update id="updateStoreOrgNameTreePath" parameterType="com.alibaba.fastjson.JSONObject">
+		UPDATE sys_organization
+		SET Org_Name_Tree_Path = REPLACE(Org_Name_Tree_Path, #{oldName}, #{newName})
+		WHERE Org_Name_Tree_Path LIKE '${oldName}%'
+	</update>
+
+	<update id="updateOrganizations" parameterType="com.alibaba.fastjson.JSONObject">
+		UPDATE sys_organization
+			<trim suffixOverrides="," prefix="SET">
+				<if test="_parameter.containsKey('Org_Name')">
+					Org_Name = #{Org_Name},
+				</if>
+				<if test="_parameter.containsKey('Org_Code')">
+					Org_Code = #{Org_Code},
+				</if>
+				<if test="_parameter.containsKey('Org_FullName')">
+					Org_FullName = #{Org_FullName},
+				</if>
+				<if test="_parameter.containsKey('Org_Logo')">
+					Org_Logo = #{Org_Logo},
+				</if>
+				<if test="_parameter.containsKey('Longitude')">
+					Longitude = #{Longitude},
+				</if>
+				<if test="_parameter.containsKey('Latitude')">
+					Latitude = #{Latitude},
+				</if>
+				<if test="_parameter.containsKey('Address')">
+					Address = #{Address},
+				</if>
+				<if test="_parameter.containsKey('Telephone')">
+					Telephone = #{Telephone},
+				</if>
+				<if test="_parameter.containsKey('orgQRCode')">
+					Org_QRCode = #{orgQRCode},
+				</if>
+
+
+	  <if test="_parameter.containsKey('telephoneAfterSale')">
+        Telephone_AfterSale = #{telephoneAfterSale},
+      </if>
+
+<!--updateSQLEnd-->
+			</trim>
+		WHERE org_id = #{Org_Id}
+	</update>
+
+	<update id="deleteOrganizations" parameterType="com.alibaba.fastjson.JSONObject">
+		UPDATE sys_organization
+		SET
+		status = #{Status}
+		WHERE org_id_tree_path  like #{Org_ID_Tree_Path}
+	</update>
+
+	<update id="updateOrgLevel" parameterType="com.alibaba.fastjson.JSONObject">
+		UPDATE sys_organization
+		SET
+		org_level = #{Org_Level}
+		WHERE org_id= #{Org_Id}
+
+	</update>
+
+	<select id="getOrgLevel" resultType="Integer">
+		SELECT Org_Level FROM sys_organization WHERE org_id = #{Org_Id}
+	</select>
+
+	<select id="getOrgIdTreePath" resultType="String">
+		SELECT Org_ID_Tree_Path FROM sys_organization WHERE org_id = #{Parent_Org_ID}
+	</select>
+	<select id="getOrgNameTreePath" resultType="String">
+		SELECT Org_Name_Tree_Path FROM sys_organization WHERE org_id = #{Parent_Org_ID}
+	</select>
+
+	<select id="getOrganizations" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT
+		w.org_id orgID,
+		w.Org_Name orgName,
+		w.parent_org_id orgParentID,
+		date_format(w.create_time, '%Y.%m.%d %T') createTime,
+		w.Org_Code orgCode,
+		w.Org_FullName orgFullName,
+		w.Org_ID_Tree_Path orgIdTreePath,
+		w.Org_Level orgLevel,
+		w.Org_Name_Tree_Path orgNameTreePath,
+		w.Org_Logo orgLogo,
+		w.Longitude longitude,
+		w.Latitude latitude,
+		w.Address address,
+		w.Telephone telephone,
+		w.Org_QRCode orgQRCode
+
+	,		w.Telephone_AfterSale telephoneAfterSale
+
+<!--getSQLEnd-->
+		FROM sys_organization w  WHERE org_id = #{orgID}
+	</select>
+
+	<select id="getStoreIDByGroupID" resultType="com.alibaba.fastjson.JSONObject" >
+		SELECT o.Org_ID orgID ,o.Org_Name orgName,o.Address address FROM sys_organization o
+		WHERE o.Org_ID_Tree_Path LIKE '%.${groupID}%' AND o.Org_Level = 3
+
+	</select>
+	<select id="getStoreByGroupID" resultType="com.alibaba.fastjson.JSONObject" >
+		SELECT o.Org_ID orgID ,o.Org_Name orgName,o.Address address FROM sys_organization o
+		WHERE o.Org_ID_Tree_Path LIKE '%.${groupID}%' AND o.Org_Level = 3 and status = 0
+		and o.address is not null
+	</select>
+
+	<select id="getOrganizationsList" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT
+		w.org_id id,
+		w.Org_Name orgName,
+		w.Org_FullName orgFullName
+
+		<!--listSQLEnd-->
+		FROM sys_organization w
+		<where>
+			w.status = '0'
+		</where>
+		ORDER BY w.org_id DESC
+	</select>
+
+	<select id="getOrganizationsList4" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT
+		w.org_id id,
+		w.Org_Name orgName,
+		w.Org_FullName orgFullName,
+		mcro.Org_ID orgID
+
+		<!--listSQLEnd-->
+		FROM sys_organization w
+		LEFT JOIN member_card_rules_org mcro
+		ON w.Org_ID = mcro.Org_ID
+		<if test="_parameter.containsKey('rulesID')">
+		AND mcro.Card_Rules_ID = #{rulesID}
+		</if>
+		<where>
+			w.status = '0'
+			AND (w.Org_Level = 3 OR w.Org_Level = 0)
+		</where>
+		ORDER BY w.org_id DESC
+	</select>
+
+	<select id="getOrganizationsList4s" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT
+		w.org_id id,
+		w.Org_Name orgName,
+		w.Org_FullName orgFullName
+
+		<!--listSQLEnd-->
+		FROM sys_organization w
+		<where>
+			w.status = '0'
+			AND (w.Org_Level = 3 OR w.Org_Level = 0)
+		</where>
+		ORDER BY w.org_id DESC
+	</select>
+
+</mapper>

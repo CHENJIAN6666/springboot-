@@ -1,0 +1,73 @@
+spring:
+  profiles:
+          active: dev
+  http:
+    multipart:
+      maxFileSize: 50Mb
+      maxRequestSize: 50Mb
+
+mybatis:
+   mapperLocations: classpath:/mapper/**/*.xml
+   configuration:
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    call-setters-on-nulls: true
+    map-underscore-to-camel-case: false
+LOG_PATH: logs
+
+#短信配置
+webservice:
+  sms:
+    #短信发送总开关
+    canSend: true
+    #短信前缀
+    smsPrefix: ""
+    #短信追尾后缀
+    smsSuffix: ""
+    #17Int配置账号密码
+    int17: 
+      account: "s11030095"
+      password: "9CDE5822B31F543F6B36A2ACCE9CAEE4"
+
+
+#swagger-ui接口地址配置
+swagger:
+  host:
+##文件上传绝对路径
+jetty:
+   path:
+
+#极光
+jpush:
+  config:
+    masterSecret: 121e26fdd4c72ca2d8dc6ab0
+    appKey: 0ab18deeb28162af2f46d364
+
+
+##小程序配置
+charging:
+  appId: "wxcde0b4ce5527d781"
+  secret: "47a8115d65c35e34a32ecc8f98fe2330"
+  #运营商ID
+  operatorID: ""
+  #基础设施平台：地址前缀：http(s)://域名/evcs/v[版本号]/接口方法
+  url: "htts://xxxxxxx/evcs/v1.0/"
+  #基础设施平台：签名密钥
+  sigSecret: "1234567890abcdef"
+  #基础设施平台：消息密钥初始化向量
+  dataSecretIV: "1234567890abcdef"
+  #基础设施平台：消息密钥
+  dataSecret: "1234567890abcdef"
+  #基础设施平台：运营商密钥
+  operatorSecret: "1234567890abcdef"
+  #云充支付回调地址
+  ycNotifyUrl: "http://120.79.186.29:7090/mp/recharge/ycNotify"
+#小程序悦租
+rent:
+  appID: wxea0a34654a624d46
+  appSecret: 87e03b2a47421358153eeada8e7bb3ff
+  #微信小程序支付回调地址
+  weNotifyUrl: "https://testyzapi.jxnewlife.com/mp/rent/mpNotify"
+  #微信小程序 租金支付回调地址
+  weRentalNotifyUrl: "http://test.jxnewlife.com:19090/mp/myRent/mpRentalNotify"
+  #微信小程序 租金合并支付回调地址
+  weMergeRentalNotifyUrl: "http://test.jxnewlife.com:19090/mp/myRent/mpMergeRentalNotify"

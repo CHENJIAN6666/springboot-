@@ -1,0 +1,898 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.newlife.s4.sys.dao.UserDao">
+
+	<sql id="querySalesConsultantName">
+		<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(listQuerySalesConsultantName)">
+			AND exists (select User_ID  from  sys_user su
+			where  su.User_ID = w.${userColumnName} and su.RealName like '%${listQuerySalesConsultantName}%')
+		</if>
+		<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(listQueryCustomerName)">
+			AND exists (select Customer_ID  from  crm_customer c
+			where  c.Customer_ID = w.${customerColumnName} and customer_Name like '%${listQueryCustomerName}%')
+		</if>
+	</sql>
+
+	<sql id="listQuery">
+		<if test="username !=null and username !=''">
+			AND user_name like '%${username}%'
+		</if>
+		<if test="mobile !=null and mobile !=''">
+			AND mobile like '%${mobile}%'
+		</if>
+		<if test="listQueryOrgID !=null and listQueryOrgID !=''">
+			AND org_id = #{listQueryOrgID}
+		</if>
+		<if test="userStatus !=null and userStatus !=''">
+			AND UserStatus = #{userStatus}
+		</if>
+
+		<if test="listQueryOrgID ==null or listQueryOrgID == ''">
+			AND org_id in (
+			SELECT org_id FROM sys_organization
+			WHERE
+			Org_ID_Tree_Path LIKE '${orgIdTreePath}%' ORDER BY Org_ID_Tree_Path)
+		</if>
+	</sql>
+
+	<select id="countUser" resultType="Integer">
+		SELECT count(0)
+		FROM sys_user u
+		WHERE u.Status = '0'
+		<include refid="listQuery"></include>
+	</select>
+
+	<resultMap id="userMap" type="com.newlife.s4.common.model.One2Many">
+		<id column="userId" property="userId" />
+		<result column="password" property="password" />
+		<result column="mobile" property="mobile" />
+		<result column="avatar" property="avatar" />
+		<result column="email" property="email" />
+		<result column="sex" property="sex" />
+		<result column="birthday" property="birthday" />
+		<result column="telphone" property="telphone" />
+		<result column="username" property="username" />
+		<result column="qq" property="qq" />
+		<result column="wx" property="wx" />
+		<result column="realName" property="realName" />
+		<result column="nickname" property="nickname" />
+		<result column="createTime" property="createTime" />
+		<result column="updateTime" property="updateTime" />
+		<result column="lastLoginTime" property="lastLoginTime" />
+		<result column="deleteStatus" property="deleteStatus" />
+		<result column="orgId" property="orgId" />
+		<result column="orgName" property="orgName" />
+		<result column="isCellManage" property="isCellManage" />
+		<collection property="roleIdList" ofType="Integer">
+			<id column="roleId" property="roleId"></id>
+		</collection>
+		<collection property="roleNameList" ofType="String">
+			<id column="roleName" property="roleName"></id>
+		</collection>
+
+	</resultMap>
+	<select id="listUser" resultType="com.alibaba.fastjson.JSONObject">
+
+		SELECT
+		user_id
+		userId,
+		user_name username,
+		nickname nickname,
+		org_id
+		org_id,
+		(select s.Org_Name from sys_organization s where s.org_id = w.org_id) Org_Name,
+		status
+		deleteStatus,
+		DATE_FORMAT(create_time, '%Y.%m.%d %T')
+		createTime,
+		DATE_FORMAT(Modify_Time, '%Y.%m.%d %T') updateTime,
+		mobile,
+		email,
+		avatar,
+		sex,
+		DATE_FORMAT(birthday, '%Y.%m.%d %T') birthday,
+		telphone,
+		qq,
+		wx,
+		realName realName,
+		UserStatus userStatus,
+		Is_Cell_Manage isCellManage
+		FROM sys_user w
+		WHERE status = '0'
+		<include refid="listQuery"></include>
+		ORDER BY user_id
+		LIMIT #{offSet}, #{pageRow}
+
+	</select>
+
+	<select id="getUserNameByIDs" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT
+			User_ID userID,
+			User_Name userName,
+			NickName nickName,
+			realName realName
+		FROM sys_user WHERE User_ID IN(
+		 <foreach collection="list" item="item" separator=",">
+			 #{item}
+		 </foreach>
+		)
+	</select>
+
+	<select id="getAllRoles" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT
+		role_id roleId,
+		role_name roleName
+		FROM sys_role
+		WHERE status='0'
+		AND org_id = #{orgID}
+	</select>
+
+	<insert id="addUser" useGeneratedKeys="true" keyProperty="userId">
+		INSERT
+		INTO sys_user(
+		<trim suffixOverrides=",">
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(orgId)">
+				org_id,
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(username)">
+				user_name,
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(password)">
+				password,
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(nickname)">
+				nickname,
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(mobile)">
+				mobile,
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(email)">
+				email,
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(avatar)">
+				avatar,
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(sex)">
+				sex,
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(realName)">
+				realName,
+			</if>
+			<if test="birthday!=null and birthday !=''">
+				birthday,
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(telphone)">
+				telphone,
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(qq)">
+				qq,
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(wx)">
+				wx,
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(isCellManage)">
+				is_cell_manage,
+			</if>
+			create_time,
+			modify_time,
+			<!--<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(userStatus)">-->
+				UserStatus,
+			<!--</if>-->
+		</trim>
+		)
+		VALUES(
+			<trim suffixOverrides=",">
+				<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(orgId)">
+					#{orgId},
+				</if>
+				<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(username)">
+					#{username},
+				</if>
+
+				<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(password)">
+					#{password},
+				</if>
+
+				<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(nickname)">
+					#{nickname},
+				</if>
+				<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(mobile)">
+					#{mobile},
+				</if>
+				<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(email)">
+					#{email},
+				</if>
+				<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(avatar)">
+					#{avatar},
+				</if>
+				<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(sex)">
+					#{sex},
+				</if>
+				<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(realName)">
+					#{realName},
+				</if>
+				<if test="birthday!=null and birthday !=''">
+					#{birthday},
+				</if>
+				<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(telphone)">
+					#{telphone},
+				</if>
+				<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(qq)">
+					#{qq},
+				</if>
+				<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(wx)">
+					#{wx},
+				</if>
+				<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(isCellManage)">
+					#{isCellManage},
+				</if>
+				now(),
+				now(),
+				<!--<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(userStatus)">-->
+					<!--#{userStatus},-->
+				<!--</if>-->
+				0,
+			</trim>
+				)
+	</insert>
+
+	<update id="updateUser">
+		UPDATE sys_user
+		SET
+		<trim suffixOverrides=",">
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(orgId)">
+				org_id = #{orgId},
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(mobile)">
+				mobile = #{mobile},
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(email)">
+				email = #{email},
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(avatar)">
+				avatar = #{avatar},
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(sex)">
+				sex = #{sex},
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(birthday)">
+				birthday =#{birthday},
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(telphone)">
+				telphone = #{telphone},
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(qq)">
+				qq = #{qq},
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(wx)">
+				wx = #{wx},
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(nickname)">
+				nickname = #{nickname},
+			</if>
+				modify_time = now(),
+
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(modifyUser)">
+				Modify_User = #{modifyUser},
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(password)">
+				password = #{password},
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(deleteStatus)">
+				status = #{deleteStatus},
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(realName)">
+				realName = #{realName},
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(userStatus)">
+				UserStatus = #{userStatus},
+			</if>
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(isCellManage)">
+				Is_Cell_Manage = #{isCellManage},
+			</if>
+		</trim>
+		WHERE user_id =#{userId}
+	</update>
+	<resultMap id="roleMap" type="com.newlife.s4.common.model.One2Many">
+		<id column="roleId" property="roleId" />
+		<result column="roleName" property="roleName" />
+		<result column="roleCode" property="roleCode" />
+		<collection property="permissionIds" ofType="com.alibaba.fastjson.JSONObject">
+			<id column="permissionIds" property="permissionIds" />
+			<id column="menuIds" property="menuIds" />
+			<id column="operationIds" property="operationIds" />
+			<result column="menuOperationId" property="menuOperationId" />
+		</collection>
+		<collection property="users" ofType="com.alibaba.fastjson.JSONObject">
+			<id column="userId" property="userId" />
+			<result column="nickname" property="nickname" />
+		</collection>
+		<collection property="menus" ofType="com.newlife.s4.common.model.One2Many">
+			<id column="menuCode" property="menuCode" />
+			<result column="menuName" property="menuName" />
+			<result column="menuId" property="menuId" />
+			<collection property="permissions" ofType="com.alibaba.fastjson.JSONObject">
+				<id column="permissionId" property="permissionId" />
+				<result column="permissionName" property="permissionName" />
+			</collection>
+		</collection>
+	</resultMap>
+	<select id="listRole" resultMap="roleMap">
+		SELECT
+		r.role_id roleId,
+		r.role_name roleName,
+		r.role_code roleCode,
+		rp.rolePermission_Id permissionIds,
+		rp.menu_id
+		menuIds,
+		rp.operation_id operationIds,
+		u.user_id
+		userId,
+		u.nickname
+		nickname,
+		op.operation_id permissionId,
+		m.menu_id
+		menuId,
+		m.menu_code
+		menuCode,
+		m.menu_name menuName,
+		op.operation_name
+		permissionName,
+		mo.menuOperation_id menuOperationId
+		FROM
+		sys_role r
+		LEFT JOIN
+		sys_user_role ur ON ur.role_id
+		= r.role_id
+		LEFT JOIN
+		sys_user u ON
+		ur.user_id = u.user_id AND u.Status
+		= '0'
+		LEFT JOIN
+		sys_role_permission
+		rp ON r.role_id = rp.role_id
+		LEFT
+		JOIN sys_menu m ON
+		rp.menu_id =
+		m.menu_id
+		LEFT JOIN sys_operation op ON
+		op.operation_id =
+		rp.operation_id
+		LEFT JOIN sys_menu_operation mo ON
+		mo.menu_id =
+		rp.menu_id AND mo.operation_id = rp.operation_id
+		WHERE r.status = '0'
+		AND r.org_id = #{orgID}
+		ORDER BY
+		r.role_Id, op.operation_id
+	</select>
+	<resultMap id="permissionMap" type="com.newlife.s4.common.model.One2Many">
+		<id column="menuName" property="menuName" />
+		<result column="menuCode" property="menuCode" />
+		<result column="menuId" property="menuId" />
+		<result column="menuIdTreePath" property="menuIdTreePath" />
+		<result column="menuLevel" property="menuLevel" />
+
+		<collection property="permissions" ofType="com.newlife.s4.common.model.One2Many">
+			<id column="menuOperationId" property="menuOperationId" />
+			<id column="operationId" property="operationId" />
+			<result column="permissionName" property="permissionName" />
+			<result column="requiredPerm" property="requiredPerm"
+				javaType="Integer" />
+		</collection>
+	</resultMap>
+	<select id="listAllPermission" resultMap="permissionMap">
+		SELECT
+		m.menu_id menuId,
+		m.menu_code menuCode,
+		m.menu_name menuName,
+		m.Menu_Level menuLevel,
+		m.Menu_ID_Tree_Path
+		menuIdTreePath,
+
+		mo.menuOperation_id menuOperationId,
+
+		o.operation_id operationId,
+		o.operation_name permissionName,
+		o.required_permission
+		requiredPerm,
+		o.Order_Number orderNumber
+
+		FROM
+		sys_menu m
+		LEFT JOIN sys_menu_operation mo ON mo.menu_id = m.menu_id
+		LEFT JOIN sys_operation o ON o.operation_id = mo.operation_id
+
+		<where>
+			m.status = '0'
+			<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(orgID)">
+				AND EXISTS(SELECT * FROM sys_org_module om WHERE
+				om.menu_id = m.menu_id
+				and om.org_id = #{orgID})
+			</if>
+		</where>
+
+		ORDER BY menuIdTreePath,orderNumber
+	</select>
+
+	<insert id="insertRole" useGeneratedKeys="true" keyProperty="roleId">
+		INSERT INTO sys_role
+		(role_code,role_name,org_id,create_time,create_user,modify_time,modify_user)
+		VALUES (#{roleCode},#{roleName},#{orgID},now(),#{createUser},now(),#{modifyUser})
+	</insert>
+
+	<insert id="insertRolePermission">
+		insert into sys_role_permission (role_id, menu_id,operation_id)
+		values
+		<foreach collection="permissions" item="item" index="index"
+			separator=",">
+			(#{roleId}, #{item.menuId},#{item.operationId})
+		</foreach>
+	</insert>
+
+	<resultMap id="aRole" type="com.newlife.s4.common.model.One2Many">
+		<id column="roleId" property="roleId" />
+		<result column="roleName" property="roleName" />
+		<collection property="users" ofType="com.alibaba.fastjson.JSONObject">
+			<id column="userId" property="userId" />
+		</collection>
+		<collection property="permissionIds" ofType="com.alibaba.fastjson.JSONObject">
+			<id column="menuId" property="menuId" />
+			<id column="operationId" property="operationId" />
+		</collection>
+	</resultMap>
+	<select id="getRoleAllInfo" resultMap="aRole">
+		SELECT
+		r.role_id roleId,
+		r.role_name roleName,
+		r.role_code roleCode,
+		u.user_id userId,
+		rp.menu_Id menuId,
+		rp.operation_Id operationId
+		FROM sys_role r
+		LEFT JOIN sys_user_role ur
+		ON r.Role_ID = ur.role_id
+		LEFT JOIN sys_user u ON ur.user_id =
+		u.user_id AND u.Status = 0
+		LEFT
+		JOIN
+		sys_role_permission rp ON r.Role_ID
+		= rp.role_id AND
+		r.status = '0'
+
+		WHERE r.Role_ID = #{roleId}
+	</select>
+
+	<select id="getRoleByRoleCode" resultMap="aRole">
+		SELECT
+		r.role_id roleId,
+		r.role_name roleName,
+		r.role_code roleCode,
+		u.user_id userId,
+		rp.menu_Id menuId,
+		rp.operation_Id operationId
+		FROM sys_role r
+		LEFT JOIN sys_user_role ur
+		ON r.Role_ID = ur.role_id
+		LEFT JOIN sys_user u ON ur.user_id =
+		u.user_id AND u.Status = 0
+		LEFT
+		JOIN
+		sys_role_permission rp ON r.Role_ID
+		= rp.role_id AND
+		r.status = '0'
+		WHERE r.role_code = #{roleCode}
+	</select>
+
+	<update id="removeRole">
+		UPDATE sys_role
+		SET
+		status = 1
+		WHERE role_id =
+		#{roleId}
+	</update>
+	<update id="removeRoleAllPermission">
+		UPDATE sys_operation
+		SET
+		status = '1'
+		WHERE operation_id
+		= #{operationId}
+	</update>
+
+	<!-- <update id="removeOldPermission"> UPDATE sys_role_permission SET delete_status 
+		= '1' WHERE role_id = #{roleId} AND permission_id in ( <foreach collection="permissions" 
+		item="item" index="index" separator=","> #{item} </foreach> ) </update> -->
+	<delete id="removeOldPermission">
+		DELETE FROM sys_role_permission
+		WHERE role_id =
+		#{roleId}
+	</delete>
+
+
+
+
+	<delete id="removeOldUserRole">
+		DELETE
+		FROM sys_user_role
+		WHERE user_id = #{userId}
+		AND role_id in(
+		<foreach collection="roleIdList" item="item" index="index"
+			separator=",">
+			#{item}
+		</foreach>
+		)
+	</delete>
+
+	<update id="updateRoleName">
+		UPDATE sys_role
+		SET
+		Role_Code = #{roleCode},
+		role_name = #{roleName}
+		WHERE
+		role_id = #{roleId}
+	</update>
+	<select id="queryExistUsername" resultType="int">
+		select count(0)
+		from
+		sys_user
+		WHERE user_name=#{username}
+		AND status='0';
+	</select>
+
+	<insert id="insertUserRole">
+		insert into sys_user_role (user_Id, role_Id)
+		values
+		<foreach collection="roleId" item="item" index="index"
+			separator=",">
+			(#{userId}, #{item})
+		</foreach>
+	</insert>
+
+	<resultMap id="userRole" type="com.newlife.s4.common.model.One2Many">
+		<id column="roleId" property="roleId" />
+		<result column="roleName" property="roleName" />
+		<collection property="users" ofType="com.alibaba.fastjson.JSONObject">
+			<id column="userId" property="userId" />
+		</collection>
+		<collection property="permissionIds" ofType="Integer">
+			<id column="permissionId" property="permissionId" />
+		</collection>
+	</resultMap>
+
+	<select id="getUserRoleAllInfo" resultMap="userRoleInfo">
+		SELECT
+		u.user_id
+		userId,r.role_Id roleId
+		FROM sys_user u
+		LEFT JOIN sys_user_role ur ON
+		u.user_id = ur.user_id
+		LEFT JOIN sys_role r ON ur.role_id = r.role_id
+		WHERE u.user_id = #{userId}
+
+	</select>
+
+	<resultMap id="userRoleInfo" type="com.newlife.s4.common.model.One2Many">
+		<id column="userId" property="userId" />
+
+		<collection property="roleIdList" ofType="Integer">
+			<id column="roleId" property="roleId" />
+		</collection>
+	</resultMap>
+
+	<select id="getMenuOperationId" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT
+		mo.menu_id menuId,
+		mo.operation_id operationId
+		FROM
+		sys_menu_operation mo
+		WHERE
+		mo.menuOperation_id in
+		<foreach collection="menuOperationIds" index="index" item="item"
+			open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+
+	<select id="getUser" resultMap="userMap">
+		SELECT
+		u.*,
+		r.role_name roleName,
+		r.role_id roleId,
+		o.org_id orgId,
+		o.org_name
+		orgName
+		FROM (
+		SELECT
+		Is_Cell_Manage isCellManage,
+		user_id
+		userId,
+		user_name username,
+		nickname nickname,
+		org_id org_id,
+		status
+		deleteStatus,
+		DATE_FORMAT(create_time, '%Y.%m.%d
+		%T') createTime,
+		DATE_FORMAT(Modify_Time, '%Y.%m.%d %T') updateTime,
+		mobile,
+		email,
+		avatar,
+		sex,
+		DATE_FORMAT(birthday, '%Y.%m.%d %T') birthday,
+		telphone,
+		qq,
+		wx,
+		realName realName,
+		password password
+		FROM sys_user
+		WHERE status = '0'
+		AND user_id =
+		#{userId}
+
+		) u
+		LEFT JOIN sys_user_role
+		ur ON ur.user_id = u.userId
+		LEFT
+		JOIN sys_role
+		r ON r.role_id =
+		ur.role_id
+		LEFT JOIN sys_organization o ON
+		u.org_id =
+		o.org_id
+		ORDER BY
+		u.userId
+	</select>
+
+	<update id="removeUser">
+		UPDATE sys_user u
+		SET u.status = "1"
+		WHERE u.user_id =
+		#{userId}
+	</update>
+
+	<resultMap type="com.newlife.s4.common.model.MobileOne2Many" id="getUserInfo4m">
+		<id column="userID" property="userID"/>
+		<id column="userName" property="userName"/>
+		<id column="realName" property="realName"/>
+		<id column="loginID" property="loginID"/>
+		<id column="avatar" property="avatar"/>
+		<collection property="userList" ofType="com.alibaba.fastjson.JSONObject">
+			<result column="roleID" property="roleID"/>
+			<result column="roleName" property="roleName"/>
+		</collection>
+
+	</resultMap>
+
+	<select id="getUserInfo4m" resultMap="getUserInfo4m" >
+		SELECT
+		u.user_id userID
+		,u.user_name userName
+		,u.Login_ID loginID
+		,u.Avatar avatar
+		,r.Role_Name roleName
+		,r.Role_ID roleID
+		,u.realName realName
+		FROM sys_user u
+		LEFT JOIN sys_user_role ur
+		ON u.user_id = ur.user_id
+		LEFT JOIN sys_role r
+		ON ur.role_id = r.role_id
+
+		WHERE
+		u.user_id = #{userID}
+	</select>
+
+	<select id="getQrCode" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT
+		u.user_id userID
+		,u.qr_code qrCode
+		FROM sys_user u
+
+		WHERE u.user_id = #{userID}
+	</select>
+
+
+
+	<select id="getAllSalesConsultantByOrg" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT
+		u.user_id
+		userId,
+		u.user_name username,
+		u.nickname nickname,
+		u.org_id
+		org_id,
+		u.status
+		deleteStatus,
+		DATE_FORMAT(u.create_time, '%Y.%m.%d %T')
+		createTime,
+		DATE_FORMAT(u.Modify_Time, '%Y.%m.%d %T') updateTime,
+		u.mobile,
+		u.email,
+		u.avatar,
+		u.sex,
+		DATE_FORMAT(u.birthday, '%Y.%m.%d %T') birthday,
+		u.telphone,
+		u.qq,
+		u.wx,
+		u.realName realName
+		FROM sys_user u
+		LEFT JOIN sys_user_role ur ON ur.User_ID = u.User_ID
+		LEFT JOIN sys_role r ON r.Role_ID = ur.Role_ID
+		WHERE
+		  r.Role_ID = 5
+		  AND
+		 u.status = '0'
+		AND u.org_id in (
+		SELECT org_id FROM sys_organization
+		WHERE
+		Org_ID_Tree_Path LIKE '${orgIdTreePath}%' )
+	</select>
+	
+	
+	<select id="getUser4m" resultMap="userMap4m">
+		SELECT
+		u.*,
+		r.role_name roleName,
+		r.role_id roleId,
+		o.org_id orgId,
+		o.org_name
+		orgName
+		FROM (
+		SELECT
+		user_id
+		userId,
+		user_name username,
+		nickname nickname,
+		org_id org_id,
+		realName realName,
+		avatar avatar
+		FROM sys_user
+		WHERE status = '0'
+		AND user_id =	#{userId}
+		) u
+		LEFT JOIN sys_user_role
+		ur ON ur.user_id = u.userId
+		LEFT
+		JOIN sys_role
+		r ON r.role_id =
+		ur.role_id
+		LEFT JOIN sys_organization o ON
+		u.org_id =
+		o.org_id
+		ORDER BY
+		u.userId
+	</select>
+	
+	<resultMap id="userMap4m" type="com.newlife.s4.common.model.One2Many">
+		<id column="userId" property="userId" />
+		<result column="mobile" property="mobile" />
+		<result column="avatar" property="avatar" />
+		<result column="email" property="email" />
+		<result column="sex" property="sex" />
+		<result column="birthday" property="birthday" />
+		<result column="telphone" property="telphone" />
+		<result column="username" property="username" />
+		<result column="qq" property="qq" />
+		<result column="wx" property="wx" />
+		<result column="realName" property="realName" />
+		<result column="nickname" property="nickname" />
+		<result column="createTime" property="createTime" />
+		<result column="updateTime" property="updateTime" />
+		<result column="lastLoginTime" property="lastLoginTime" />
+		<result column="deleteStatus" property="deleteStatus" />
+		<result column="orgId" property="orgId" />
+		<result column="orgName" property="orgName" />
+		<collection property="userRoleList" ofType="com.alibaba.fastjson.JSONObject" >
+			<id column="roleId" property="roleId"></id>
+			<result column="roleName" property="roleName"></result>
+		</collection>
+
+	</resultMap>
+
+	<resultMap id="getRolesByUserMap" type="com.newlife.s4.common.model.One2Many" >
+		<id column="userID" property="userID"></id>
+		<result column="realName" property="realName"></result>
+		<result column="avatar" property="avatar"></result>
+		<collection property="roleNameList" ofType="String">
+			<result column="roleName" property="roleName"></result>
+		</collection>
+	</resultMap>
+
+	<select id="getRolesByUser" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT
+			u.User_ID userID,
+			r.Role_ID roleID,
+			u.RealName realName,
+			u.Avatar avatar,
+			r.Role_Name roleName
+		FROM
+			sys_role r
+			LEFT JOIN sys_user_role ur ON ur.Role_ID = r.Role_ID
+			LEFT JOIN sys_user u ON u.User_ID = ur.User_ID
+			WHERE u.User_ID = #{userID}
+	</select>
+
+	<update id="updateAvatar" parameterType="com.alibaba.fastjson.JSONObject">
+		UPDATE sys_user SET avatar = #{avatar}
+		WHERE User_ID = #{userID}
+	</update>
+
+	<update id="updatePwd" parameterType="com.alibaba.fastjson.JSONObject">
+		UPDATE sys_user SET password = #{password}
+		WHERE User_ID = #{userId}
+	</update>
+
+	<select id="listUserByRoleNOrgID" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT
+			user_id
+			userId,
+			user_name username,
+			nickname nickname,
+			org_id
+			org_id,
+			status
+			deleteStatus,
+			mobile,
+			email,
+			avatar,
+			sex,
+			DATE_FORMAT(birthday, '%Y.%m.%d %T') birthday,
+			telphone,
+			qq,
+			wx,
+			realName realName
+			FROM sys_user su
+			WHERE status = '0'
+
+		<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(orgIdTreePath)">
+			AND EXISTS  (
+			SELECT 1 FROM sys_organization so
+			WHERE su.org_id =SO.org_id
+			and  Org_ID_Tree_Path LIKE '${orgIdTreePath}%' )
+		</if>
+		<if test="!@com.newlife.s4.util.StringTools@isNullOrEmpty(roleID)">
+			AND EXISTS  (
+			SELECT 1 FROM SYS_USER_ROLE sc
+			WHERE sc.user_id = su.User_ID and  Role_ID =#{roleID})
+		</if>
+
+	</select>
+
+	<resultMap id="qrInfoMap" type="com.newlife.s4.common.model.MobileOne2Many">
+		<id property="userID" column="userID"></id>
+		<result column="avatar"  property="avatar"></result>
+		<result column="realName"  property="realName"></result>
+		<result column="mobile"  property="mobile"></result>
+		<result column="roleName"  property="roleName"></result>
+		<result column="orgName"  property="orgName"></result>
+		<result column="address"  property="address"></result>
+		<collection  property="carBrandList" ofType="com.alibaba.fastjson.JSONObject">
+			<result column="carBrandName" property="carBrandName"></result>
+			<result column="logo" property="logo"></result>
+		</collection>
+	</resultMap>
+
+	<select id="getQrInfo" resultMap="qrInfoMap">
+		SELECT
+			u.User_ID userID,
+			u.Avatar avatar,
+			u.RealName realName,
+			u.Mobile mobile,
+			r.Role_Name roleName,
+			o.Org_Name orgName,
+			o.Address address,
+			cb.Car_Brand_Name carBrandName,
+			cb.LOGO logo
+		FROM
+			sys_user u
+		LEFT JOIN sys_user_role ur ON ur.User_ID = u.User_ID
+		LEFT JOIN sys_role r ON r.Role_ID = ur.Role_ID
+		LEFT JOIN sys_organization o ON o.Org_ID = u.Org_ID
+		LEFT JOIN base_org_brand ob ON ob.Org_ID = u.Org_ID
+		LEFT JOIN base_car_brand cb ON cb.Car_Brand_ID = ob.Car_Brand_ID
+		WHERE
+			u.User_ID = #{userID}
+	</select>
+
+</mapper>

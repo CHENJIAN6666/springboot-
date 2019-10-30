@@ -1,0 +1,102 @@
+server:
+  port: 9090
+spring:
+  data:
+    mongodb:
+      primary:
+        host: jx.51wbar.com
+        port: 27017
+        database: yunchong
+        password: mongo_db
+        username: mongo_db
+        authentication-database: admin
+      second:
+        host: jx.51wbar.com
+        port: 27017
+        database: gps_mongodb
+        password: mongo_db
+        username: mongo_db
+        authentication-database: admin
+  datasource:
+      driver-class-name: com.mysql.jdbc.Driver
+      url: jdbc:mysql://120.79.186.29:13306/newlife_s4?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false
+      username: newlife_s4
+      password: NewLife@@@s42018
+      type: com.alibaba.druid.pool.DruidDataSource
+      initialSize: 3
+      minIdle: 10
+      maxIdle: 10
+      maxActive: 20
+      maxWait: 10000
+      keepAlive: true
+      removeAbandoned: true
+      removeAbandonedTimeout: 80
+      logAbandoned: true
+
+
+  redis:
+     # Redis服务器地址
+      host: 120.79.186.29
+      # Redis服务器连接端口
+      port: 16379
+      # Redis服务器连接密码（默认为空）
+      password: "6802cd93f0822dd3f72e9cd1482a0eb9"
+      # 连接超时时间（毫秒）
+      timeout: 6000
+      # 连接指定的数据库
+      database: 11
+       # 连接池最大连接数（使用负值表示没有限制）
+      pool:
+         max-active: 20
+        # 连接池最大阻塞等待时间（使用负值表示没有限制）
+         max-wait: -1
+        # 连接池中的最大空闲连接
+         max-idle: 10
+        # 连接池中的最小空闲连接
+         min-idle: 5
+
+#微信配置
+wx:
+  #公众号 APP_ID
+  appId: wx01a779da98637dea
+  #公众号 APP_SECRET
+  appSecret: 3ddbbc6c7767d3f99f5194c0fa41a521
+  #公众号 TOKEN
+  token: chiv88jxnewlife20180710
+  #公众号 AES_KEY
+  aesKey: X1vk8xP2RDM7uGf9paEGXmqr4hfHprJeHoZzb2kGylc
+  #商户号
+  mchId: 1508509831
+  #微信支付平台商户API密钥
+  mchKey: 45adsfSDFERdKKUY1123345fdfddKYDS
+  #服务商模式下的子商户公众账号ID
+  subAppId:
+  #服务商模式下的子商户号
+  subMchId:
+  #apiclient_cert.p12 证书文件的绝对路径
+  keyPath: "/data/newlife/newlife_s4_api/apiclient_cert.p12"
+  #支付回调地址
+  notifyUrl: "https://wx.jxnewlife.com/api/wechat/payOrder4m"
+  #微信登陆后跳转地址
+  redirectDomain: "https://wx.jxnewlife.com/"
+  #微信登陆后跳转地址
+  apiDomain: "https://wx.jxnewlife.com/api"
+
+#存储服务器配置
+storageService:
+  #文件存储服务器地址 "http://192.168.2.51:8080/" "http://www.jxnewlife.com:9092/"
+  fileStorageAddress: "http://static.jxnewlife.com/"
+
+#swagger-ui接口地址配置
+swagger:
+  host:
+
+##文件上传绝对路径
+jetty:
+   path: "/data/newlife/newlife_s4_weex_resources"
+
+GPS:
+  aesKey: newlife
+  notifyUrl : "http://192.168.1.252:8000/"
+
+

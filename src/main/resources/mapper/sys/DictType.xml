@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.newlife.s4.sys.dao.DictDao">
+
+
+	<select id="listDictTypes" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT
+		dictTypeId dictTypeId,
+		dictTypeCode dictTypeCode,
+		Parent_DictTypeID parentDictTypeId,
+		DictTypeText dictTypeText,
+		create_time createTime,
+		create_user createUser,
+		DictTypeID_Tree_Path
+		dictTypeIdTreePath ,
+		DictType_Level dictTypeLevel
+		FROM sys_dicttype d
+		<where>
+			d.status = 0
+			<if test="dictTypeText != null">
+				AND d.dictTypeText LIKE '%${dictTypeText}%'
+			</if>
+			AND d.org_id = #{orgID}
+		</where>
+		ORDER BY d.DictTypeID DESC
+		LIMIT #{offSet},#{pageRow}
+	</select>
+
+	<insert id="addDictType" parameterType="com.alibaba.fastjson.JSONObject">
+		<selectKey resultType="java.lang.Long" order="AFTER"
+			keyProperty="dictTypeId">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		INSERT INTO
+		sys_dicttype
+		(dictTypeCode,Parent_DictTypeID,DictTypeText,create_time,create_user,DictTypeID_Tree_Path,DictType_Level,org_id)
+		VALUES
+		(#{dictTypeCode},#{parentDictTypeId},#{dictTypeText},now(),#{createUser},#{dictTypeIdTreePath},#{dictTypeLevel},#{orgID})
+	</insert>
+
+	<update id="updateDictType" parameterType="com.alibaba.fastjson.JSONObject">
+		UPDATE sys_dicttype
+		SET dictTypeCode =#{dictTypeCode},
+		DictTypeText = #{dictTypeText},
+		Modify_Time = now(),
+		Modify_User = #{modifyUser}
+		WHERE DictTypeID =
+		#{dictTypeId}
+	</update>
+
+	<update id="deleteDictType" parameterType="com.alibaba.fastjson.JSONObject">
+		UPDATE sys_dicttype
+		SET status = #{status} ,
+		Modify_Time = now(),
+		Modify_User =
+		#{modifyUser}
+		WHERE DictTypeID_Tree_Path
+		LIKE '${dictTypeIdTreePath}%'
+	</update>
+
+	<select id="getDictTypeTreePath" resultType="String">
+		SELECT
+		DictTypeID_Tree_Path
+		FROM sys_dicttype
+		WHERE DictTypeID =#{dictTypeId}
+	</select>
+
+	<update id="updateDictTypeTreePath" parameterType="com.alibaba.fastjson.JSONObject">
+		UPDATE
+		sys_dicttype
+		SET DictTypeID_Tree_Path = #{dictTypeIdTreePath}
+		WHERE
+		DictTypeID = #{dictTypeId}
+	</update>
+
+	<select id="getDictTypeLevel" resultType="Integer">
+		SELECT DictType_Level
+		FROM sys_dicttype
+		WHERE DictTypeID = #{dictTypeId}
+	</select>
+
+	<update id="updateDictTypeLevel" parameterType="com.alibaba.fastjson.JSONObject">
+		UPDATE
+		sys_dicttype
+		SET DictType_Level =#{dictTypeLevel}
+		WHERE DictTypeID =
+		#{dictTypeId}
+	</update>
+
+	<select id="countDictType" resultType="Integer">
+		SELECT count(0)
+		FROM
+		sys_dicttype d
+		WHERE d.status = '0'
+	</select>
+
+	<select id="listDictDatas" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT DictDataID dictDataId,
+		DictTypeCode dictTypeCode,
+		DictDataText dictDataText,
+		DictDataCode dictDataCode
+		FROM sys_dictdata
+		<where>
+			DictTypeCode =#{dictTypeCode}
+			AND
+			status = 0
+			AND org_id = #{orgID}
+		</where>
+		ORDER BY Order_Number 
+		LIMIT #{offSet},#{pageRow}
+	</select>
+
+	<insert id="addDictData" parameterType="com.alibaba.fastjson.JSONObject">
+		INSERT INTO sys_dictdata
+		(DictTypeCode,
+		DictDataCode,
+		DictDataText,
+		Create_Time,
+		Create_User,org_id,order_number)
+		VALUES
+		(#{dictTypeCode},
+		#{dictDataCode},
+		#{dictDataText},
+		now(),
+		#{createUser},
+		#{orgID},
+		#{orderNumber}
+		)
+	</insert>
+
+	<delete id="deleteDictData" parameterType="com.alibaba.fastjson.JSONObject">
+		DELETE FROM
+		sys_dictdata
+		WHERE DictDataID = #{dictDataId}
+	</delete>
+
+	<update id="updateDictData" parameterType="com.alibaba.fastjson.JSONObject">
+		UPDATE sys_dictdata
+		SET
+		DictDataCode = #{dictDataCode},
+		DictDataText = #{dictDataText},
+		Modify_Time = now(),
+		Modify_User = #{modifyUser},
+		order_number = #{orderNumber}
+		WHERE DictDataID =
+		#{dictDataId}
+	</update>
+
+	<select id="countDictData" resultType="Integer">
+		SELECT count(0) FROM sys_dictdata
+		<if test="dictTypeCode !=null and dictTypeCode != ''">
+			<where>
+				DictTypeCode = #{dictTypeCode}
+			</where>
+		</if>
+
+	</select>
+
+	<select id="getDictData" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT 
+		DictTypeCode dictTypeCode,
+		DictDataCode dictDataCode,
+		DictDataText dictDataText 
+		FROM sys_dictdata
+		WHERE 
+		DictTypeCode =#{dictTypeCode}
+		ORDER BY order_number DESC
+	</select>
+	
+	<select id="queryDictData" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT 
+		DictDataID dictDataId,
+		DictTypeCode dictTypeCode,
+		DictDataCode dictDataCode,
+		DictDataText dictDataText,
+		order_number orderNumber 
+		FROM sys_dictdata
+		WHERE 
+		dictDataId = #{dictDataID}
+	</select>
+	
+	
+	
+</mapper>
