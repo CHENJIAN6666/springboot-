@@ -19,7 +19,7 @@ spring:
         authentication-database: admin
   datasource:
       driver-class-name: com.mysql.jdbc.Driver
-      url: jdbc:mysql://test.jxnewlife.com:13306/newlife_charging?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false
+      url: jdbc:mysql://test.jxnewlife.com:13306/newlife_base?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false
       username: newlife_s4
       password: newlife_s4
       type: com.alibaba.druid.pool.DruidDataSource
