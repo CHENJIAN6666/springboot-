@@ -13,15 +13,15 @@ spring:
       second:
         host: jx.51wbar.com
         port: 27017
-        database: gps_mongodb
+        database: yunchong
         password: mongo_db
         username: mongo_db
         authentication-database: admin
   datasource:
       driver-class-name: com.mysql.jdbc.Driver
       url: jdbc:mysql://test.jxnewlife.com:13306/newlife_base?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false
-      username: newlife_s4
-      password: newlife_s4
+      username: esnewlife
+      password: es_2019
       type: com.alibaba.druid.pool.DruidDataSource
       initialSize: 3
       minIdle: 10
