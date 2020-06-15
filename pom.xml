@@ -21,7 +21,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
         <weixin-java-tools.version>3.0.0</weixin-java-tools.version>
-        <dom4j.version>2.0.0</dom4j.version>
+        <dom4j.version>2.1.3</dom4j.version>
     </properties>
     <dependencies>
         <dependency>
